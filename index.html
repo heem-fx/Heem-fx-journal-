@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="HEEM FX Trading Journal and XAUUSD risk calculator.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>HEEM FX Trading Journal</title>
+<style>
+:root{--bg:#0b1220;--panel:#121c2e;--panel2:#18253a;--text:#eef4ff;--muted:#a7b5cc;--line:#2a3952;--gold:#f4c95d;--green:#4bd3a2;--red:#ff737d;--blue:#8db7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{padding:22px 16px 16px;background:linear-gradient(135deg,#172641,#101827);border-bottom:1px solid var(--line)}
+.wrap{max-width:1000px;margin:auto} .brand{color:var(--gold);font-weight:800;letter-spacing:.12em;font-size:12px}
+h1{font-size:24px;line-height:1.15;margin:7px 0} .sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:8px;padding:12px 12px 0;max-width:1000px;margin:auto;overflow:auto}
+nav button{white-space:nowrap;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:12px;padding:10px 14px;font-weight:700}
+nav button.active{background:var(--gold);border-color:var(--gold);color:#172033}
+main{max-width:1000px;margin:auto;padding:14px 12px 32px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;min-width:0}
+.card h2{font-size:17px;margin:0 0 12px}.statlabel{font-size:12px;color:var(--muted)}.stat{font-size:23px;font-weight:800;margin-top:3px;overflow-wrap:anywhere}
+.full{grid-column:1/-1}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+label{display:block;color:var(--muted);font-size:12px;margin:0 0 5px}
+input,select,textarea{width:100%;background:#0c1525;border:1px solid #33445f;border-radius:10px;padding:11px;color:var(--text);font:inherit;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #688bd0;border-color:transparent}
+button{cursor:pointer;font:inherit}.primary{background:var(--gold);color:#172033;border:0;border-radius:11px;padding:12px 15px;font-weight:800}.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-weight:700}.danger{background:#3a1e2b;color:#ffb1b6;border:1px solid #6e3544;border-radius:10px;padding:8px 10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.result{background:#0c1525;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+.resultgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.small{font-size:12px;color:var(--muted)}.good{color:var(--green)}.bad{color:var(--red)}.gold{color:var(--gold)}
+.tablewrap{overflow:auto;margin-top:10px}table{border-collapse:collapse;width:100%;font-size:13px;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}td{overflow-wrap:anywhere}
+.pill{display:inline-block;border-radius:999px;padding:3px 8px;background:#24354d;color:#cbd9ee;font-size:11px}.empty{padding:18px;text-align:center;color:var(--muted)}
+.note{border-left:3px solid var(--gold);padding:9px 12px;background:#1b2638;border-radius:0 10px 10px 0;color:#d6e0f0;font-size:12px;margin-top:12px}
+.hidden{display:none!important}.footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 10px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.fields{grid-template-columns:repeat(3,minmax(0,1fr))}.two{grid-column:span 2}}
+@media(max-width:420px){h1{font-size:21px}.grid{gap:8px}.card{padding:12px}.stat{font-size:20px}.fields{gap:9px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">HEEM FX</div><h1>Trading Journal</h1><div class="sub">Plan your risk. Record every trade. Learn from your results.</div></div></header>
+<nav>
+<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="calculator">Risk Calculator</button><button data-tab="journal">Trade Journal</button><button data-tab="settings">Settings & Backup</button>
+</nav>
+<main>
+<section id="dashboard" class="tab">
+<div class="grid">
+<div class="card"><div class="statlabel">Net realized P/L</div><div class="stat" id="statPL">$0.00</div></div>
+<div class="card"><div class="statlabel">Win rate</div><div class="stat" id="statWin">0%</div></div>
+<div class="card"><div class="statlabel">Trades recorded</div><div class="stat" id="statCount">0</div></div>
+<div class="card"><div class="statlabel">Wins / Losses</div><div class="stat" id="statWL">0 / 0</div></div>
+<div class="card full"><h2>Recent trades</h2><div id="recent"></div><div class="actions"><button class="primary" onclick="showTab('journal')">＋ Add or view trades</button><button class="secondary" onclick="showTab('calculator')">Calculate risk</button></div></div>
+<div class="card full"><h2>Trading discipline</h2><div class="small">Before opening a trade, decide your stop loss and calculate the position size. Record the actual result after closing the trade. Do not increase risk to recover a loss.</div></div>
+</div>
+</section>
+<section id="calculator" class="tab hidden">
+<div class="card"><h2>XAUUSD risk calculator</h2><div class="small">Estimate position size from your account, risk and stop-loss distance. Enter the price distance in dollars (for example, 5 means gold moves $5.00).</div>
+<div class="fields" style="margin-top:14px">
+<div><label for="account">Account balance ($)</label><input id="account" type="number" min="0" step="any" value="6000"></div>
+<div><label for="riskPct">Risk per trade (%)</label><input id="riskPct" type="number" min="0" max="100" step="any" value="1"></div>
+<div><label for="stopDist">Stop-loss distance ($ price move)</label><input id="stopDist" type="number" min="0.0001" step="any" value="5"></div>
+<div><label for="contract">Contract size (oz per 1.00 lot)</label><input id="contract" type="number" min="0.0001" step="any" value="100"></div>
+<div><label for="entryPrice">Entry price (optional)</label><input id="entryPrice" type="number" min="0" step="any" placeholder="e.g. 2750.00"></div>
+<div><label for="direction">Direction</label><select id="direction"><option>Buy</option><option>Sell</option></select></div>
+<div><label for="targetDist">Take-profit distance ($ price move)</label><input id="targetDist" type="number" min="0" step="any" value="10"></div>
+</div>
+<div class="result"><div class="resultgrid">
+<div><div class="statlabel">Maximum planned risk</div><div class="stat gold" id="riskMoney">$60.00</div></div>
+<div><div class="statlabel">Estimated lot size</div><div class="stat" id="lotSize">0.12</div></div>
+<div><div class="statlabel">Risk if using 0.10 lot</div><div class="stat" id="risk01">$50.00</div></div>
+<div><div class="statlabel">Potential reward at target</div><div class="stat good" id="reward">$120.00</div></div>
+</div><div class="small" id="calcDetails" style="margin-top:10px"></div></div>
+<div class="note">Important: this is an estimate before spread, commission, slippage and gaps. Verify the exact XAUUSD contract size and tick value in your broker/prop firm's symbol specifications. A 100 oz contract is only an editable starting assumption, not a verified setting for your account. Confirm lot-step and minimum-volume rules too.</div>
+<div class="actions"><button class="primary" onclick="copyCalc()">Copy calculation</button><button class="secondary" onclick="resetCalc()">Reset calculator</button></div><div id="copyStatus" class="small" aria-live="polite"></div>
+</div>
+</section>
+<section id="journal" class="tab hidden">
+<div class="card"><h2 id="formTitle">Record a closed trade</h2><form id="tradeForm">
+<input id="editId" type="hidden">
+<div class="fields">
+<div><label for="tradeDate">Date</label><input id="tradeDate" type="date" required></div>
+<div><label for="symbol">Symbol</label><input id="symbol" value="XAUUSD" required></div>
+<div><label for="side">Direction</label><select id="side"><option>Buy</option><option>Sell</option></select></div>
+<div><label for="entry">Entry price</label><input id="entry" type="number" step="any" placeholder="0.00"></div>
+<div><label for="sl">Stop loss</label><input id="sl" type="number" step="any" placeholder="Price level"></div>
+<div><label for="tp">Take profit</label><input id="tp" type="number" step="any" placeholder="Price level"></div>
+<div><label for="lots">Lot size</label><input id="lots" type="number" min="0" step="any" placeholder="0.10" required></div>
+<div><label for="pl">Realized P/L ($)</label><input id="pl" type="number" step="any" placeholder="Use negative for loss" required></div>
+<div><label for="outcome">Outcome</label><select id="outcome"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+<div class="two"><label for="notes">Notes / setup</label><textarea id="notes" rows="2" placeholder="Why did you enter? What did you learn?"></textarea></div>
+</div>
+<div class="actions"><button class="primary" type="submit" id="saveTrade">Save trade</button><button class="secondary" type="button" onclick="clearForm()">Clear form</button></div>
+</form></div>
+<div class="card" style="margin-top:12px"><h2>All trades</h2><div class="fields"><div><label for="filterSymbol">Filter by symbol</label><input id="filterSymbol" placeholder="All symbols" oninput="renderJournal()"></div><div><label for="filterOutcome">Filter by outcome</label><select id="filterOutcome" onchange="renderJournal()"><option>All</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div></div><div id="journalTable"></div></div>
+</section>
+<section id="settings" class="tab hidden">
+<div class="card"><h2>Settings & backup</h2><p class="small">Your trades are saved in this browser on this device. They are not automatically synced to another phone or stored in a cloud account.</p>
+<div class="actions"><button class="primary" onclick="exportCSV()">Export trades (CSV)</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import backup (CSV)</button><input class="hidden" id="importFile" type="file" accept=".csv,text/csv"></div>
+<div class="note">Keep an export somewhere safe. Clearing browser data, uninstalling the browser or changing devices may erase this journal. CSV import supports files exported by this app.</div>
+<h2 style="margin-top:22px">Default calculator settings</h2><p class="small">The calculator defaults to a $6,000 account, 1% risk, a $5 gold-price stop and a 100 oz contract size. Edit these values to match your own account.</p>
+<div class="actions"><button class="danger" onclick="clearAll()">Delete all journal data</button></div><div class="small" id="backupStatus" aria-live="polite"></div>
+</div>
+</section>
+<div class="footer">HEEM FX • Free local-first journal • Not financial advice • Verify broker specifications before trading.</div>
+</main>
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {})); }
+const STORE='heemfx_trades_v1';
+let trades=[];
+try{trades=JSON.parse(localStorage.getItem(STORE)||'[]');if(!Array.isArray(trades))trades=[];}catch(e){trades=[];}
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(STORE,JSON.stringify(trades));}
+function money(n){return (n<0?'-$':'$')+Math.abs(Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));if(id==='dashboard')renderDashboard();if(id==='journal')renderJournal();window.scrollTo({top:0,behavior:'smooth'});}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function renderDashboard(){
+ const closed=trades;const pnl=closed.reduce((s,t)=>s+Number(t.pl||0),0);const wins=closed.filter(t=>Number(t.pl)>0).length;const losses=closed.filter(t=>Number(t.pl)<0).length;const decisive=wins+losses;
+ $('statPL').textContent=money(pnl);$('statPL').className='stat '+(pnl>0?'good':pnl<0?'bad':'');$('statWin').textContent=(decisive?Math.round(wins/decisive*100):0)+'%';$('statCount').textContent=closed.length;$('statWL').textContent=wins+' / '+losses;
+ const recent=[...trades].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+ $('recent').innerHTML=recent.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Side</th><th>P/L</th></tr></thead><tbody>'+recent.map(t=>`<tr><td>${esc(t.date)}</td><td>${esc(t.symbol)}</td><td>${esc(t.side)}</td><td class="${Number(t.pl)>0?'good':Number(t.pl)<0?'bad':''}">${money(t.pl)}</td></tr>`).join('')+'</tbody></table></div>':'<div class="empty">No trades yet. Record your first closed trade in the journal.</div>';
+}
+function renderJournal(){
+ const sym=($('filterSymbol').value||'').toLowerCase(),out=$('filterOutcome').value;
+ const arr=[...trades].filter(t=>(t.symbol||'').toLowerCase().includes(sym)&&(out==='All'||t.outcome===out)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ $('journalTable').innerHTML=arr.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Side</th><th>Lots</th><th>SL</th><th>TP</th><th>P/L</th><th>Outcome</th><th>Actions</th></tr></thead><tbody>'+arr.map(t=>`<tr><td>${esc(t.date)}</td><td>${esc(t.symbol)}</td><td>${esc(t.side)}</td><td>${esc(t.lots)}</td><td>${esc(t.sl||'—')}</td><td>${esc(t.tp||'—')}</td><td class="${Number(t.pl)>0?'good':Number(t.pl)<0?'bad':''}">${money(t.pl)}</td><td><span class="pill">${esc(t.outcome)}</span></td><td><button class="secondary" onclick="editTrade('${t.id}')">Edit</button> <button class="danger" onclick="deleteTrade('${t.id}')">Delete</button></td></tr>`).join('')+'</tbody></table></div>':'<div class="empty">No matching trades found.</div>';
+ renderDashboard();
+}
+function clearForm(){ $('tradeForm').reset();$('editId').value='';$('symbol').value='XAUUSD';$('tradeDate').value=new Date().toISOString().slice(0,10);$('formTitle').textContent='Record a closed trade';$('saveTrade').textContent='Save trade';}
+$('tradeForm').addEventListener('submit',e=>{
+ e.preventDefault();const id=$('editId').value||String(Date.now())+Math.random().toString(16).slice(2);
+ const t={id,date:$('tradeDate').value,symbol:$('symbol').value.trim().toUpperCase(),side:$('side').value,entry:$('entry').value,sl:$('sl').value,tp:$('tp').value,lots:Number($('lots').value),pl:Number($('pl').value),outcome:$('outcome').value,notes:$('notes').value.trim()};
+ if(!t.symbol||!t.date||!Number.isFinite(t.lots)||!Number.isFinite(t.pl)){alert('Please enter a date, symbol, lot size and P/L.');return;}
+ const i=trades.findIndex(x=>x.id===id);if(i>=0)trades[i]=t;else trades.push(t);save();clearForm();renderJournal();$('backupStatus').textContent='';alert('Trade saved on this device.');
+});
+function editTrade(id){const t=trades.find(x=>x.id===id);if(!t)return;showTab('journal');$('editId').value=t.id;for(const k of ['date','symbol','side','entry','sl','tp','lots','pl','outcome','notes'])$(k==='date'?'tradeDate':k).value=t[k]??'';$('formTitle').textContent='Edit trade';$('saveTrade').textContent='Update trade';window.scrollTo({top:0,behavior:'smooth'});}
+function deleteTrade(id){if(!confirm('Delete this trade? This cannot be undone unless you have a backup.'))return;trades=trades.filter(t=>t.id!==id);save();renderJournal();}
+function calculate(){
+ const bal=Math.max(0,Number($('account').value)||0),pct=Math.max(0,Math.min(100,Number($('riskPct').value)||0)),dist=Math.max(0,Number($('stopDist').value)||0),contract=Math.max(0,Number($('contract').value)||0),target=Math.max(0,Number($('targetDist').value)||0),entry=Number($('entryPrice').value)||0;
+ const risk=bal*pct/100,lossPerLot=dist*contract,lot=lossPerLot>0?risk/lossPerLot:0,risk01=lossPerLot*.1,reward=target*contract*lot;
+ $('riskMoney').textContent=money(risk);$('lotSize').textContent=lot.toLocaleString(undefined,{maximumFractionDigits:4});$('risk01').textContent=money(risk01);$('reward').textContent=money(reward);
+ let detail=`Formula: risk money ÷ (stop distance × contract size) = ${money(risk)} ÷ (${dist} × ${contract}) = ${lot.toLocaleString(undefined,{maximumFractionDigits:6})} lots before rounding to your broker's permitted lot step.`;
+ if(entry>0&&dist>0){const sl=$('direction').value==='Buy'?entry-dist:entry+dist;const tp=$('direction').value==='Buy'?entry+target:entry-target;detail+=` Illustrative stop price: ${sl.toFixed(2)}; target price: ${tp.toFixed(2)}.`;}
+ $('calcDetails').textContent=detail;
+}
+['account','riskPct','stopDist','contract','entryPrice','direction','targetDist'].forEach(id=>$(id).addEventListener('input',calculate));
+function resetCalc(){$('account').value=6000;$('riskPct').value=1;$('stopDist').value=5;$('contract').value=100;$('entryPrice').value='';$('direction').value='Buy';$('targetDist').value=10;calculate();}
+function copyCalc(){const txt=`HEEM FX Risk Calculation\nBalance: ${money(Number($('account').value)||0)}\nRisk: ${$('riskPct').value}%\nStop distance: $${$('stopDist').value}\nContract size: ${$('contract').value} oz/lot (verify with broker)\nPlanned risk: ${$('riskMoney').textContent}\nEstimated lot size: ${$('lotSize').textContent}\nPotential reward before costs: ${$('reward').textContent}\n${$('calcDetails').textContent}`;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>$('copyStatus').textContent='Calculation copied.').catch(()=>$('copyStatus').textContent=txt);}else{$('copyStatus').textContent=txt;}}
+const headers=['id','date','symbol','side','entry','sl','tp','lots','pl','outcome','notes'];
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
+function exportCSV(){const csv=[headers.join(','),...trades.map(t=>headers.map(h=>csvCell(t[h])).join(','))].join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='heem-fx-trading-journal.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);$('backupStatus').textContent='CSV backup exported.';}
+$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const text=await f.text();const lines=text.split(/\r?\n/).filter(Boolean);const parse=line=>{let out=[],v='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&q&&line[i+1]==='"'){v+='"';i++;}else if(c==='"')q=!q;else if(c===','&&!q){out.push(v);v='';}else v+=c;}out.push(v);return out;};const hs=parse(lines[0]);if(!headers.every(h=>hs.includes(h)))throw new Error('This CSV does not look like a HEEM FX backup.');const imported=lines.slice(1).map(line=>{const vals=parse(line),o={};hs.forEach((h,i)=>o[h]=vals[i]??'');o.lots=Number(o.lots)||0;o.pl=Number(o.pl)||0;return o;}).filter(t=>t.id&&t.date&&t.symbol);const map=new Map(trades.map(t=>[t.id,t]));imported.forEach(t=>map.set(t.id,t));trades=[...map.values()];save();renderDashboard();renderJournal();$('backupStatus').textContent=`Imported ${imported.length} trades. Matching IDs were updated.`;alert(`Imported ${imported.length} trades.`);}catch(err){alert(err.message||'Could not import that file.');}e.target.value='';});
+function clearAll(){if(!confirm('Permanently delete every saved trade on this device? Export a backup first if needed.'))return;trades=[];save();clearForm();renderDashboard();renderJournal();$('backupStatus').textContent='All journal data deleted.';}
+$('tradeDate').value=new Date().toISOString().slice(0,10);calculate();renderDashboard();
+</script>
+</body>
+</html>
